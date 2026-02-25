@@ -1,5 +1,6 @@
 using Application;
 using Application.Behaviors;
+using Application.Common.Interfaces;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Identity;
@@ -37,5 +38,23 @@ public static class ServiceExtensions
     public static void ConfigureIPipelineBehavior(this IServiceCollection services)
     {
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    }
+
+    public static void ConfigureIIdentityService(this IServiceCollection services)
+    {
+        services.AddScoped<IIdentityRoleService, IdentityRoleService>();
+    }
+
+    public static void ConfigureCors(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+        });
     }
 }

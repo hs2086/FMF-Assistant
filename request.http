@@ -1,0 +1,16 @@
+@baseUrl = "http://localhost:5073"
+
+### Get All Roles
+GET {{baseUrl}}/api/roles
+Content-Type: application/json
+Accept: application/json
+
+
+### Create Role
+POST {{baseUrl}}/api/roles/create
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Super Admin"
+}
