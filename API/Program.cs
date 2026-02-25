@@ -17,6 +17,8 @@ builder.Services.ConfigureIPipelineBehavior();
 
 builder.Services.ConfigureCors();
 
+builder.Services.ConfigureExceptionHandler();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -24,6 +26,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();          // Enable Swagger generator
     app.UseSwaggerUI();        // Enable Swagger UI at /swagger
 }
+
+app.UseExceptionHandler();
 app.MapControllers();
 app.UseCors("AllowAll");
 app.MapGet("/", () => "Hello World!");

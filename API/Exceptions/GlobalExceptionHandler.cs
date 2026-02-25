@@ -1,4 +1,5 @@
-using Application.Common.Exceptions.BadRequestExceptin;
+using Application.Common.Exceptions.BadRequestException;
+using Application.Common.Exceptions.NotFountException;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -25,10 +26,16 @@ public sealed class GlobalExceptionHandler(IProblemDetailsService problemDetails
                 Detail = ex.Message,
                 Status = StatusCodes.Status400BadRequest
             },
+            NotFoundException ex => new ProblemDetails
+            {
+                Title = "Resource not found!",
+                Detail = ex.Message,
+                Status = StatusCodes.Status404NotFound
+            },
             _ => new ProblemDetails
             {
-                Title = "Server Error!",
-                Detail = "An unhandled exception!",
+                Title = exception.GetType().Name,
+                Detail = exception.Message,
                 Status = StatusCodes.Status500InternalServerError
             }
         };

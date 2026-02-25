@@ -1,4 +1,4 @@
-namespace Application.Common.Exceptions.BadRequestExceptin.Role;
+namespace Application.Common.Exceptions.BadRequestException.Role;
 
 public class RoleAlreadyExistBadRequestException : BadRequestException
 {

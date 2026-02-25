@@ -1,3 +1,4 @@
+using API.Exceptions;
 using Application;
 using Application.Behaviors;
 using Application.Common.Interfaces;
@@ -56,5 +57,11 @@ public static class ServiceExtensions
                        .AllowAnyHeader();
             });
         });
+    }
+
+    public static void ConfigureExceptionHandler(this IServiceCollection services)
+    {
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
     }
 }
