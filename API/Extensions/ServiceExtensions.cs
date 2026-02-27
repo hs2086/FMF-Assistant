@@ -5,6 +5,7 @@ using Application.Common.Interfaces;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Identity;
+using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticAssets;
@@ -50,9 +51,14 @@ public static class ServiceExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
     }
 
-    public static void ConfigureIIdentityService(this IServiceCollection services)
+    public static void ConfigureIIdentityRoleService(this IServiceCollection services)
     {
         services.AddScoped<IIdentityRoleService, IdentityRoleService>();
+    }
+
+    public static void ConfigureIIdentityAuthService(this IServiceCollection services)
+    {
+        services.AddScoped<IIdentityAuthService, IdentityAuthService>();
     }
 
     public static void ConfigureCors(this IServiceCollection services)
@@ -72,5 +78,15 @@ public static class ServiceExtensions
     {
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
+    }
+
+    public static void ConfigureEmailService(this IServiceCollection services)
+    {
+        services.AddScoped<IEmailService, EmailService>();    
+    }
+
+    public static void ConfigureIApplicationDbContext(this IServiceCollection services)
+    {
+        services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
     }
 }

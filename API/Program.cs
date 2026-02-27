@@ -8,8 +8,10 @@ builder.Services.AddEndpointsApiExplorer(); // <-- required
 builder.Services.AddSwaggerGen();           // <-- add Swagger
 
 builder.Services.ConfigureSqlContext(builder.Configuration);
+builder.Services.ConfigureIApplicationDbContext();
 
-builder.Services.ConfigureIIdentityService();
+builder.Services.ConfigureIIdentityRoleService();
+builder.Services.ConfigureIIdentityAuthService();
 
 builder.Services.ConfigureMediatR();
 builder.Services.ConfigureFluentValidation();
@@ -18,6 +20,8 @@ builder.Services.ConfigureIPipelineBehavior();
 builder.Services.ConfigureCors();
 
 builder.Services.ConfigureExceptionHandler();
+
+builder.Services.ConfigureEmailService();
 
 var app = builder.Build();
 
