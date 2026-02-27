@@ -21,6 +21,12 @@ builder.Services.ConfigureExceptionHandler();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await AdminSeeder.SeedAsync(services);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();          // Enable Swagger generator

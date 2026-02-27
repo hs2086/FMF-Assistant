@@ -18,7 +18,16 @@ public static class ServiceExtensions
     {
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("sqlConnection")));
 
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(
+            options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = true;
+            }
+        )
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
     }
