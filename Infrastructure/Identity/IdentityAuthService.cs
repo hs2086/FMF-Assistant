@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace Infrastructure.Identity;
 
@@ -129,7 +130,15 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
         };
     }
 
+    public async Task ChangePasswordAsync(string oldPassword, string newPassword, string userId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
 
+        ApplicationUser? user = await userManager.FindByIdAsync(userId);
+        if (user is null) throw new UserNotFoundException("User");
+
+        await userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+    }
 
 
 
@@ -156,28 +165,33 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
     // =============================================================
     private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
     {
-        List<Claim> userClaims = new List<Claim>();
-        userClaims.Add(new Claim(ClaimTypes.Email, user.Email ?? ""));
-        userClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-        IList<String> roles = await userManager.GetRolesAsync(user);
+        List<Claim> userClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // <--- Add this
+            new Claim(ClaimTypes.Email, user.Email ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        IList<string> roles = await userManager.GetRolesAsync(user);
         foreach (var role in roles)
         {
             userClaims.Add(new Claim(ClaimTypes.Role, role));
         }
-        SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT__KEY") ?? ""));
+
+        SymmetricSecurityKey key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT__KEY") ?? "")
+        );
         SigningCredentials credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(
             issuer: Environment.GetEnvironmentVariable("JWT__ISSUER"),
             audience: Environment.GetEnvironmentVariable("JWT__AUDIENCE"),
             claims: userClaims,
-            expires: DateTime.Now.AddMinutes(Convert.ToDouble(Environment.GetEnvironmentVariable("JWT__DURATIONINMINUTES"))),
+            expires: DateTime.Now.AddMinutes(
+                Convert.ToDouble(Environment.GetEnvironmentVariable("JWT__DURATIONINMINUTES") ?? "60")
+            ),
             signingCredentials: credentials
         );
-        // setx JWT__ISSUER "http://localhost:5073"
-        // setx  "http://localhost:3000"
-        // setx JWT__DURATIONINMINUTES 60
-        // setx JWT__KEY "35c6726652e58acd3cd1ef717c08a71f"
-        // setx JWT__DURATIONINDAYS 7
 
         return jwtSecurityToken;
     }

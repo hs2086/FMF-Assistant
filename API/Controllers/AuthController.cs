@@ -1,7 +1,10 @@
+using System.Security.Claims;
 using API.Request.Auth;
+using Application.Features.Auth.Command.ChangePassword;
 using Application.Features.Auth.Command.LoginUser;
 using Application.Features.Auth.Command.RefreshToken;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -26,5 +29,17 @@ public class AuthController(IMediator mediator) : ControllerBase
 
         var response = await mediator.Send(command);
         return Ok(response);
+    }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordRequest request)
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return BadRequest("Login first!");
+        var command = new ChangePasswordCommand(request.OldPassword, request.NewPassword, userId);
+
+        await mediator.Send(command);
+        return Ok("Password changed successfully.");
     }
 }
