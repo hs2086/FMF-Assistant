@@ -2,6 +2,7 @@ using System.Security.Claims;
 using API.Request.Auth;
 using Application.Features.Auth.Command.ChangePassword;
 using Application.Features.Auth.Command.LoginUser;
+using Application.Features.Auth.Command.Logout;
 using Application.Features.Auth.Command.RefreshToken;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -41,5 +42,18 @@ public class AuthController(IMediator mediator) : ControllerBase
 
         await mediator.Send(command);
         return Ok("Password changed successfully.");
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> LogoutAsync()
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var command = new LogoutUserCommand(userId);
+
+        await mediator.Send(command);
+        return Ok("Logout is successfully.");
     }
 }

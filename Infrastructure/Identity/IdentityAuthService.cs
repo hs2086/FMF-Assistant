@@ -140,7 +140,18 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
         await userManager.ChangePasswordAsync(user, oldPassword, newPassword);
     }
 
+    public async Task LogoutAsync(string userId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
 
+        ApplicationUser? user = await userManager.FindByIdAsync(userId);
+        if (user is null) throw new UserNotFoundException("User");
+
+        user.RefreshToken = "invalid";
+        user.RefreshTokenExpiryTime = DateTime.UtcNow;
+
+        await userManager.UpdateAsync(user);
+    }
 
 
 
