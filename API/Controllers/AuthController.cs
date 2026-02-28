@@ -4,6 +4,8 @@ using Application.Features.Auth.Command.ChangePassword;
 using Application.Features.Auth.Command.LoginUser;
 using Application.Features.Auth.Command.Logout;
 using Application.Features.Auth.Command.RefreshToken;
+using Application.Features.Auth.Command.SendVerificationCode;
+using Application.Features.Auth.Command.VerifyEmail;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -55,5 +57,23 @@ public class AuthController(IMediator mediator) : ControllerBase
 
         await mediator.Send(command);
         return Ok("Logout is successfully.");
+    }
+
+    [HttpPost("send-otp")]
+    public async Task<IActionResult> SendVerifacationCode([FromBody] SendVerificationCodeRequest request)
+    {
+        var command = new SendVerificationCodeCommand(request.Email);
+
+        await mediator.Send(command);
+        return Ok("Code sent successfuly.");
+    }
+
+    [HttpPost("verify")]
+    public async Task<IActionResult> VerifyEmial([FromBody] VerifyEmailRequest request)
+    {
+        var command = new VerifyEmailCommand(request.Email, request.Code);
+
+        await mediator.Send(command);
+        return Ok("Email verified.");
     }
 }
