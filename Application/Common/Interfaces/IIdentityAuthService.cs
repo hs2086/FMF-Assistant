@@ -10,4 +10,6 @@ public interface IIdentityAuthService
     Task LogoutAsync(string userId, CancellationToken cancellationToken);
     Task SendVerificationCodeAsync(string email, CancellationToken cancellationToken);
     Task VerifyEmailCodeAsync(string email, string code, CancellationToken cancellationToken);
+    Task ResetPasswordAsync(string email, string otp, string newPassword, CancellationToken cancellationToken);
+    Task ForgotPasswordAsync(string email, CancellationToken cancellationToken);
 }

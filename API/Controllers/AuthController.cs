@@ -1,13 +1,16 @@
 using System.Security.Claims;
 using API.Request.Auth;
 using Application.Features.Auth.Command.ChangePassword;
+using Application.Features.Auth.Command.ForgotPassword;
 using Application.Features.Auth.Command.LoginUser;
 using Application.Features.Auth.Command.Logout;
 using Application.Features.Auth.Command.RefreshToken;
+using Application.Features.Auth.Command.ResetPassword;
 using Application.Features.Auth.Command.SendVerificationCode;
 using Application.Features.Auth.Command.VerifyEmail;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -75,5 +78,23 @@ public class AuthController(IMediator mediator) : ControllerBase
 
         await mediator.Send(command);
         return Ok("Email verified.");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] Reset_PasswordRequest request)
+    {
+        var command = new ResetPasswordCommand(request.Email, request.Code, request.NewPassword);
+
+        await mediator.Send(command);
+        return Ok("Password has been reset successfully.");
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] Forgot_PasswordRequest request)
+    {
+        var command = new ForgotPasswordCommand(request.Email);
+
+        await mediator.Send(command);
+        return Ok("If an account with that email exists, a password reset otp has been sent.");
     }
 }

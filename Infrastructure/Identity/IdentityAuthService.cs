@@ -72,13 +72,14 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
 
     public async Task VerifyEmailCodeAsync(string email, string code, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var user = await userManager.FindByEmailAsync(email);
         if (user == null) throw new UserNotFoundException(email);
 
         var verification = await context.EmailVerificationCodes
             .Where(v => v.UserId == user.Id && !v.IsUsed)
             .OrderByDescending(v => v.ExpirationTime)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (verification == null) throw new VerificationCodeBadRequestException("No verification request found");
 
@@ -153,25 +154,43 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
         await userManager.UpdateAsync(user);
     }
 
+    public async Task ResetPasswordAsync(string email, string otp, string newPassword, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null) throw new UserNotFoundException(email);
+
+        var reset = await context.EmailVerificationCodes
+            .Where(v => v.UserId == user.Id && !v.IsUsed)
+            .OrderByDescending(v => v.ExpirationTime)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (reset == null) throw new ResetPasswordBadRequestException("No verification request found");
+
+        if (reset.ExpirationTime < DateTime.UtcNow) throw new ResetPasswordBadRequestException("Code expired");
+
+        if (reset.AttemptCount >= 5) throw new ResetPasswordBadRequestException("Maximum attempts reached");
 
 
+        if (reset.Code != otp)
+        {
+            reset.AttemptCount++;
+            await context.SaveChangesAsync(cancellationToken);
+            throw new ResetPasswordBadRequestException("Invalid code");
+        }
 
+        reset.IsUsed = true;
 
+        var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+        await userManager.ResetPasswordAsync(user, resetToken, newPassword);
+        await context.SaveChangesAsync(cancellationToken);
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public async Task ForgotPasswordAsync(string email, CancellationToken cancellationToken)
+    {
+        await sendOTPForResetPassword(email, cancellationToken);
+    }
 
     // =============================================================
     private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
@@ -210,4 +229,31 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
     {
         return Guid.NewGuid().ToString().Replace("-", "") + Guid.NewGuid().ToString().Replace("-", "");
     }
+    private async Task sendOTPForResetPassword(string email, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null) throw new UserNotFoundException(email);
+
+        var code = new Random().Next(100000, 999999).ToString();
+
+        var verification = new EmailVerificationCode
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Code = code,
+            ExpirationTime = DateTime.UtcNow.AddMinutes(5),
+            IsUsed = false
+        };
+
+        context.EmailVerificationCodes.Add(verification);
+        await context.SaveChangesAsync(cancellationToken);
+
+        await emailService.SendEmailAsync(
+            user.Email!,
+            "Reset Password",
+            $"Your code is {code}. It expires in 5 minutes.");
+    }
+
 }
