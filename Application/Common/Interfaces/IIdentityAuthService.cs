@@ -4,5 +4,6 @@ namespace Application.Common.Interfaces;
 
 public interface IIdentityAuthService
 {
-    Task<LoginUserDTO> LoginUserAsync(string email, string password, CancellationToken cancellationToken);
+    Task<AuthUserDTO> LoginUserAsync(string email, string password, CancellationToken cancellationToken);
+    Task<AuthUserDTO> RefreshTokenAsync(string email, string refreshToken, CancellationToken cancellationToken);
 }

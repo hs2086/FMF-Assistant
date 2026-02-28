@@ -14,7 +14,7 @@ namespace Infrastructure.Identity;
 
 public class IdentityAuthService(UserManager<ApplicationUser> userManager, IApplicationDbContext context, IEmailService emailService) : IIdentityAuthService
 {
-    public async Task<LoginUserDTO> LoginUserAsync(string email, string password, CancellationToken cancellationToken)
+    public async Task<AuthUserDTO> LoginUserAsync(string email, string password, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -32,11 +32,11 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
         
         JwtSecurityToken jwtSecurityToken = await GenerateToken(user);
         user.RefreshToken = CreateRefreshToken();
-        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(Convert.ToDouble(Environment.GetEnvironmentVariable("JWT__DURATIONINDAYS")));
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Environment.GetEnvironmentVariable("JWT__DURATIONINDAYS")));
 
         await userManager.UpdateAsync(user);
 
-        return new LoginUserDTO
+        return new AuthUserDTO
         {
             Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
             Expiration = jwtSecurityToken.ValidTo.ToLocalTime(),
@@ -102,7 +102,32 @@ public class IdentityAuthService(UserManager<ApplicationUser> userManager, IAppl
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<AuthUserDTO> RefreshTokenAsync(string email, string refreshToken, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ApplicationUser? user = await userManager.FindByEmailAsync(email);
+        if (user is null) throw new UserNotFoundException(email);
 
+        // System.Console.WriteLine(user.RefreshToken);
+        // System.Console.WriteLine(user.RefreshTokenExpiryTime);
+        if (user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+        {
+            throw new RefreshTokenBadRequestException("Refresh Token is invalid!");
+        }
+
+        JwtSecurityToken jwtSecurityToken = await GenerateToken(user);
+        user.RefreshToken = CreateRefreshToken();
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Environment.GetEnvironmentVariable("JWT__DURATIONINDAYS")));
+
+        await userManager.UpdateAsync(user);
+
+        return new AuthUserDTO
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+            Expiration = jwtSecurityToken.ValidTo.ToLocalTime(),
+            RefreshToken = user.RefreshToken
+        };
+    }
 
 
 
