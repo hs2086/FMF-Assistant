@@ -2,6 +2,7 @@ using System.Security.Claims;
 using API.Request.Hospital;
 using Application.Features.Hospitals.Command.CreateHospital;
 using Application.Features.Hospitals.Queries.GetHospitalById;
+using Application.Features.Hospitals.Queries.GetHospitals;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,5 +33,16 @@ public class HospitalsController(IMediator mediator) : ControllerBase
         var query = new GetHospitalByIdQuery(id);
         var hospital = await mediator.Send(query);
         return Ok(hospital);
+    }
+    
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetHospitals([FromQuery] HospitalParameter parameter)
+    {
+        var query = new GetHospitalsQuery(parameter);
+        var hospitals = await mediator.Send(query);
+
+        Response.Headers.Append("X-Pagination", System.Text.Json.JsonSerializer.Serialize(hospitals.MetaData));
+        return Ok(hospitals);
     }
 }
