@@ -1,4 +1,4 @@
-namespace Domain.Auth;
+namespace Domain;
 
 public class EmailVerificationCode
 {

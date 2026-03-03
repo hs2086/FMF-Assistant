@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260228191747_AddAttacksTable")]
+    partial class AddAttacksTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,6 +100,21 @@ namespace Infrastructure.Migrations
                     b.ToTable("DoctorHospital");
                 });
 
+            modelBuilder.Entity("Domain.DoctorPatient", b =>
+                {
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("DoctorId", "PatientId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("DoctorPatient");
+                });
+
             modelBuilder.Entity("Domain.EmailVerificationCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -158,78 +176,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Hospitals");
                 });
 
-            modelBuilder.Entity("Domain.LabResult", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalRange")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ResultValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TestName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("LabResults");
-                });
-
-            modelBuilder.Entity("Domain.MedicationLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Dose")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Taken")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("MedicationLogs");
-                });
-
             modelBuilder.Entity("Domain.Patient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -239,7 +185,7 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DiagnosisDate")
+                    b.Property<DateTime>("DiagnosisDete")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Gender")
@@ -264,21 +210,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Patients");
-                });
-
-            modelBuilder.Entity("Domain.PatientHospital", b =>
-                {
-                    b.Property<Guid>("HospitalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("HospitalId", "PatientId");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("PatientHospital");
                 });
 
             modelBuilder.Entity("Infrastructure.Identity.ApplicationUser", b =>
@@ -530,6 +461,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Hospital");
                 });
 
+            modelBuilder.Entity("Domain.DoctorPatient", b =>
+                {
+                    b.HasOne("Domain.Doctor", "Doctor")
+                        .WithMany("DoctorPatients")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Patient", "Patient")
+                        .WithMany("DoctorPatients")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("Domain.EmailVerificationCode", b =>
                 {
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
@@ -548,26 +498,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.LabResult", b =>
-                {
-                    b.HasOne("Domain.Patient", null)
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.MedicationLog", b =>
-                {
-                    b.HasOne("Domain.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("Domain.Patient", b =>
                 {
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
@@ -575,25 +505,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.PatientHospital", b =>
-                {
-                    b.HasOne("Domain.Hospital", "Hospital")
-                        .WithMany("PatientHospitals")
-                        .HasForeignKey("HospitalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Patient", "Patient")
-                        .WithMany("PatientHospitals")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Hospital");
-
-                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -650,18 +561,18 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Doctor", b =>
                 {
                     b.Navigation("DoctorHospitals");
+
+                    b.Navigation("DoctorPatients");
                 });
 
             modelBuilder.Entity("Domain.Hospital", b =>
                 {
                     b.Navigation("DoctorHospitals");
-
-                    b.Navigation("PatientHospitals");
                 });
 
             modelBuilder.Entity("Domain.Patient", b =>
                 {
-                    b.Navigation("PatientHospitals");
+                    b.Navigation("DoctorPatients");
                 });
 #pragma warning restore 612, 618
         }

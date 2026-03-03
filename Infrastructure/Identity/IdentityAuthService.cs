@@ -4,7 +4,7 @@ using Application.Common.Exceptions.BadRequestException;
 using Application.Common.Exceptions.NotFountException;
 using Application.Common.Interfaces;
 using Application.Features.Auth.Command.LoginUser;
-using Domain.Auth;
+using Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

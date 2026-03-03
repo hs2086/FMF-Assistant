@@ -1,10 +1,11 @@
-using Domain.Auth;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {
-    public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }  
+    DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }  
+    DbSet<Hospital> Hospitals { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken); 
 }
