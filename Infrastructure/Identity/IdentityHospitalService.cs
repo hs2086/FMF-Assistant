@@ -30,4 +30,12 @@ public class IdentityHospitalService(UserManager<ApplicationUser> userManager) :
         await userManager.AddToRoleAsync(user, "Hospital");
         return user.Id;
     }
+
+    public async Task<bool> DeleteHospitalUserAsync(Guid hospitalId, CancellationToken cancellationToken)
+    {
+        ApplicationUser? user = await userManager.FindByIdAsync(hospitalId.ToString());
+        if (user is null) return false;
+        IdentityResult result = await userManager.DeleteAsync(user);
+        return result.Succeeded;
+    }
 }

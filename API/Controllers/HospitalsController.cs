@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using API.Request.Hospital;
 using Application.Features.Hospitals.Command.CreateHospital;
+using Application.Features.Hospitals.Command.DeleteHospital;
 using Application.Features.Hospitals.Command.UpdateHospital;
 using Application.Features.Hospitals.Queries.GetHospitalById;
 using Application.Features.Hospitals.Queries.GetHospitals;
@@ -54,5 +55,14 @@ public class HospitalsController(IMediator mediator) : ControllerBase
         var command = new UpdateHospitalCommand(id, request.name, request.address, request.phone, request.email);
         var hospital = await mediator.Send(command);
         return Ok(hospital);
+    }
+
+    [HttpDelete("delete/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteHospital(string id)
+    {
+        var command = new DeleteHospitalCommand(id);
+        await mediator.Send(command);
+        return Ok("Hospital deleted successfully.");
     }
 }
