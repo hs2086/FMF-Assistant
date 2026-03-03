@@ -16,6 +16,7 @@ builder.Services.ConfigureIApplicationDbContext();
 
 builder.Services.ConfigureIIdentityRoleService();
 builder.Services.ConfigureIIdentityAuthService();
+builder.Services.ConfigureIIdentityHospitalService();
 
 builder.Services.ConfigureMediatR();
 builder.Services.ConfigureFluentValidation();

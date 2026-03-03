@@ -7,6 +7,7 @@ public class Hospital
     public string Address { get; set; } = "";
     public string Phone { get; set; } = "";
     public string Email { get; set; } = "";
+    public Guid Who { get; set; }
     public Guid UserId { get; set; }
 
     public ICollection<DoctorHospital> DoctorHospitals { get; set; } = new List<DoctorHospital>();

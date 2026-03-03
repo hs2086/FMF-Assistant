@@ -24,5 +24,8 @@ public class CreateHospitalCommandValidator : AbstractValidator<CreateHospitalCo
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("UserId is required.")
             .Must(userId => Guid.TryParse(userId, out _)).WithMessage("UserId must be a valid GUID.");
+            
+        RuleFor(u => u.Password).NotEmpty().WithMessage("Password should not be empty!")
+                            .MinimumLength(8).WithMessage("Password should be at least 8 characters long!");
     }
 }

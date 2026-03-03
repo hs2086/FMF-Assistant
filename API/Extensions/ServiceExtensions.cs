@@ -65,6 +65,11 @@ public static class ServiceExtensions
         services.AddScoped<IIdentityAuthService, IdentityAuthService>();
     }
 
+    public static void ConfigureIIdentityHospitalService(this IServiceCollection services)
+    {
+        services.AddScoped<IIdentityHospitalService, IdentityHospitalService>();
+    }
+
     public static void ConfigureCors(this IServiceCollection services)
     {
         services.AddCors(options =>

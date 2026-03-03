@@ -7,5 +7,6 @@ public record CreateHospitalCommand(
     string Address,
     string Phone,
     string Email,
-    string UserId
+    string UserId,
+    string Password
 ) : IRequest<Guid>;
