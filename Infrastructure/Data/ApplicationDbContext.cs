@@ -18,6 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Attack> Attacks { get; set; }  
     public DbSet<MedicationLog> MedicationLogs { get; set; }
     public DbSet<LabResult> LabResults { get; set; }
+    public DbSet<DoctorHospital> DoctorHospital { get; set; }
+    public DbSet<PatientHospital> PatientHospital { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

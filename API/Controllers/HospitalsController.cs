@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using API.Request.Hospital;
+using Application.Features.Doctors.Queries.GetDoctors;
 using Application.Features.Hospitals.Command.CreateHospital;
 using Application.Features.Hospitals.Command.DeleteHospital;
 using Application.Features.Hospitals.Command.UpdateHospital;
+using Application.Features.Hospitals.Queries.GetDoctorsInHospital;
 using Application.Features.Hospitals.Queries.GetHospitalById;
 using Application.Features.Hospitals.Queries.GetHospitals;
 using MediatR;
@@ -64,5 +66,14 @@ public class HospitalsController(IMediator mediator) : ControllerBase
         var command = new DeleteHospitalCommand(id);
         await mediator.Send(command);
         return Ok("Hospital deleted successfully.");
+    }
+
+    [HttpGet("{id}/doctors")]
+    [Authorize(Roles = "Admin,Hospital")]
+    public async Task<IActionResult> GetDoctorsInHospital(string id, [FromQuery] DoctorParameter parameter)
+    {
+        var query = new GetDoctorsInHospitalQuery(id, parameter);
+        var doctors = await mediator.Send(query);
+        return Ok(doctors);
     }
 }
