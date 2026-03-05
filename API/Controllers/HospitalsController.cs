@@ -7,6 +7,7 @@ using Application.Features.Hospitals.Command.UpdateHospital;
 using Application.Features.Hospitals.Queries.GetDoctorsInHospital;
 using Application.Features.Hospitals.Queries.GetHospitalById;
 using Application.Features.Hospitals.Queries.GetHospitals;
+using Application.Features.Hospitals.Queries.GetHospitalStatistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,5 +76,14 @@ public class HospitalsController(IMediator mediator) : ControllerBase
         var query = new GetDoctorsInHospitalQuery(id, parameter);
         var doctors = await mediator.Send(query);
         return Ok(doctors);
+    }
+
+    [HttpGet("{id}/statistics")]
+    [Authorize(Roles = "Admin,Hospital")]
+    public async Task<IActionResult> GetHospitalStatistics(string id)
+    {
+        var query = new GetHospitalStatisticsQuery(id);
+        var statistics = await mediator.Send(query);
+        return Ok(statistics);
     }
 }
